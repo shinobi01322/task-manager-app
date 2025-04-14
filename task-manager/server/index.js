@@ -15,6 +15,16 @@ app.use(express.json());
 // Use routes
 app.use('/api/auth', authRoutes);
 
+const path = require('path');
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../client', 'build', 'index.html'));
+  });
+}
+
 // MongoDB connection
 mongoose.connect('mongodb+srv://kimwarren305:%40Nime2025@cluster0.lorwwwz.mongodb.net/taskmanager?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
