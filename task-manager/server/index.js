@@ -1,33 +1,26 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const dotenv = require('dotenv');
+const authRoutes = require('./routes/auth');
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middlewares
-app.use(cors());
+// Middleware to parse JSON
 app.use(express.json());
 
-// MongoDB Connection
+// Use routes
+app.use('/api/auth', authRoutes);
+
+// MongoDB connection
 mongoose.connect('mongodb+srv://kimwarren305:%40Nime2025@cluster0.lorwwwz.mongodb.net/taskmanager?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log("✅ MongoDB connected"))
-.catch((err) => console.error("❌ MongoDB connection error:", err));
-
-
-// Simple route
-app.get('/', (req, res) => {
-  res.send('Task Manager API is running!');
-});
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+.then(() => {
+  console.log('✅ MongoDB connected');
+  app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+})
+.catch((err) => console.error('❌ MongoDB connection error:', err));
