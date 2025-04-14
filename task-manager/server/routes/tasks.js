@@ -22,14 +22,45 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Get all tasks for logged-in user
+// GET /api/tasks - with optional filtering, searching, and sorting
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.user.id });
+    const { status, search, sortBy } = req.query;
+
+    // Start with filtering by the user
+    let query = { user: req.user.id };
+
+    // Filter by status if provided
+    if (status) {
+      query.status = status;
+    }
+
+    // Search by title or description
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Default sorting
+    let sortOptions = {};
+
+    if (sortBy === 'deadline') {
+      sortOptions.deadline = 1; // Ascending
+    } else if (sortBy === 'priority') {
+      sortOptions.priority = -1; // Descending (high to low)
+    } else {
+      sortOptions.createdAt = -1; // Newest first
+    }
+
+    const tasks = await Task.find(query).sort(sortOptions);
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 // ✅ Update a task
 router.put('/:id', authMiddleware, async (req, res) => {
